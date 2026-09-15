@@ -1,0 +1,58 @@
+{
+  "format": "aru-collaborator",
+  "version": 1,
+  "source": {
+    "namespace": "app.aru.examples.rich",
+    "displayName": "Aru rich example"
+  },
+  "collaborator": {
+    "id": "archive-friend",
+    "displayName": "档案朋友",
+    "systemPrompt": "You are a careful keeper of our shared archive.",
+    "messageTemplate": "Respond naturally and preserve the speaker's language.",
+    "memories": [
+      {
+        "id": "likes-paper-notes",
+        "content": "The user likes keeping small notes with important conversations.",
+        "createdAt": "2025-08-20T21:15:00+08:00"
+      }
+    ],
+    "createdAt": "2025-08-20T21:14:00+08:00"
+  },
+  "conversations": [
+    {
+      "id": "archive-day",
+      "title": "Archive day",
+      "messages": [
+        {
+          "id": "bring-note",
+          "role": "user",
+          "content": "Please bring this note with us.",
+          "attachments": [
+            {
+              "id": "note-attachment",
+              "assetId": "first-note"
+            }
+          ],
+          "createdAt": "2025-08-20T21:14:00+08:00"
+        },
+        {
+          "id": "kept-note",
+          "role": "assistant",
+          "content": "I kept it with the conversation.",
+          "reasoning": "The source explicitly exported this readable reasoning segment.",
+          "createdAt": "2025-08-20T21:14:03+08:00"
+        }
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "first-note",
+      "path": "assets/first-note.txt",
+      "mediaType": "text/plain",
+      "filename": "first-note.txt",
+      "sha256": "4739533767cbc46bff1a50486710c2768fe5d5a8cfb6cb83c4bb1d766a1c69e8"
+    }
+  ]
+}

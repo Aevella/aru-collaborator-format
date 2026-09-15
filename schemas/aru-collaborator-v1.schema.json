@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Aevella/aru-collaborator-format/v1.0.0/schemas/aru-collaborator-v1.schema.json",
+  "title": "Aru Collaborator Package v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "version", "source", "collaborator", "conversations"],
+  "properties": {
+    "format": { "const": "aru-collaborator" },
+    "version": { "const": 1 },
+    "source": { "$ref": "#/$defs/source" },
+    "collaborator": { "$ref": "#/$defs/collaborator" },
+    "conversations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/conversation" }
+    },
+    "assets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/asset" }
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": ".*\\S.*"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["namespace"],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "displayName": { "type": "string" }
+      }
+    },
+    "collaborator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "displayName"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "displayName": { "$ref": "#/$defs/id" },
+        "systemPrompt": { "type": "string" },
+        "messageTemplate": { "type": "string" },
+        "memories": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/memory" }
+        },
+        "presentation": { "$ref": "#/$defs/presentation" },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "content"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "content": { "$ref": "#/$defs/id" },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "assistantAvatarAssetId": { "$ref": "#/$defs/id" },
+        "userAvatarAssetId": { "$ref": "#/$defs/id" },
+        "backgroundAssetId": { "$ref": "#/$defs/id" },
+        "showsAvatars": { "type": "boolean" }
+      }
+    },
+    "conversation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "messages"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "title": { "type": "string" },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" },
+        "messages": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/message" }
+        }
+      }
+    },
+    "message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "role"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "role": {
+          "type": "string",
+          "enum": ["user", "assistant"]
+        },
+        "content": { "type": "string" },
+        "reasoning": { "type": "string" },
+        "attachments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/attachment" }
+        },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" }
+      },
+      "anyOf": [
+        {
+          "required": ["content"],
+          "properties": { "content": { "type": "string", "pattern": "[\\s\\S]*\\S[\\s\\S]*" } }
+        },
+        {
+          "required": ["reasoning"],
+          "properties": { "reasoning": { "type": "string", "pattern": "[\\s\\S]*\\S[\\s\\S]*" } }
+        },
+        {
+          "required": ["attachments"],
+          "properties": { "attachments": { "type": "array", "minItems": 1 } }
+        }
+      ]
+    },
+    "attachment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "assetId"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "assetId": { "$ref": "#/$defs/id" },
+        "filename": { "type": "string" },
+        "createdAt": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "path", "mediaType", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "path": {
+          "type": "string",
+          "pattern": "^assets/(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*//).+$"
+        },
+        "mediaType": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$"
+        },
+        "filename": { "type": "string" },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9A-Fa-f]{64}$"
+        },
+        "createdAt": { "$ref": "#/$defs/timestamp" }
+      }
+    }
+  }
+}

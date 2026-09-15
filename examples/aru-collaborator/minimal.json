@@ -1,0 +1,32 @@
+{
+  "format": "aru-collaborator",
+  "version": 1,
+  "source": {
+    "namespace": "app.aru.examples.minimal",
+    "displayName": "Aru minimal example"
+  },
+  "collaborator": {
+    "id": "little-light",
+    "displayName": "小灯"
+  },
+  "conversations": [
+    {
+      "id": "first-meeting",
+      "title": "第一次见面",
+      "messages": [
+        {
+          "id": "hello",
+          "role": "user",
+          "content": "你好呀。",
+          "createdAt": "2025-08-20T21:14:00+08:00"
+        },
+        {
+          "id": "here",
+          "role": "assistant",
+          "content": "我在。",
+          "createdAt": "2025-08-20T21:14:03+08:00"
+        }
+      ]
+    }
+  ]
+}
