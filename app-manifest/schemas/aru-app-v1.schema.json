@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aru App Manifest v1 (aru.app.v1)",
+  "description": "Authoring schema for Aru app manifests. Aru's importer ignores unknown keys and drops them from the stored manifest; this schema rejects them so authors notice fields this protocol version does not read. URL parsing and facet ID uniqueness are also checked by the importer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "id",
+    "name",
+    "version",
+    "publisher",
+    "runtime",
+    "requestedPermissions",
+    "dataDestinations",
+    "facets"
+  ],
+  "properties": {
+    "protocol": { "const": "aru.app.v1" },
+    "id": {
+      "description": "Stable reverse-domain app id. Reinstalling a manifest with the same id updates the existing installation.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]+(?:[._-][A-Za-z0-9]+)+$"
+    },
+    "name": { "$ref": "#/$defs/nonEmptyString" },
+    "version": { "$ref": "#/$defs/nonEmptyString" },
+    "publisher": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "$ref": "#/$defs/nonEmptyString" }
+      }
+    },
+    "runtime": { "$ref": "#/$defs/runtime" },
+    "requestedPermissions": { "$ref": "#/$defs/stringList" },
+    "dataDestinations": { "$ref": "#/$defs/stringList" },
+    "facets": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/facet" }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "runtime": { "properties": { "kind": { "const": "external-endpoint" } } } }
+      },
+      "then": {
+        "properties": { "runtime": { "required": ["origin"] } }
+      }
+    },
+    {
+      "if": {
+        "properties": { "runtime": { "properties": { "kind": { "not": { "const": "external-endpoint" } } } } }
+      },
+      "then": {
+        "properties": { "facets": { "items": { "not": { "required": ["launchPath"] } } } }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "stringList": {
+      "description": "Free-form, self-declared text shown to the user. Aru trims entries and drops empty or duplicate ones; it does not enforce them.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "httpURL": {
+      "description": "HTTP(S) URL without user info, query, or fragment.",
+      "type": "string",
+      "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://(?:[^:/@?#\\s\\[\\]\\\\]+|\\[[^\\[\\]/@?#\\s\\\\]+\\])(?::[0-9]+)?(?:/[^?#\\s]*)?$"
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["local-device", "paired-node", "external-endpoint"] },
+        "origin": {
+          "description": "Required for external-endpoint: scheme + host (+ port) only; no path other than '/', no user info, query, or fragment.",
+          "type": "string",
+          "pattern": "^[Hh][Tt][Tt][Pp][Ss]?://(?:[^:/@?#\\s\\[\\]\\\\]+|\\[[^\\[\\]/@?#\\s\\\\]+\\])(?::[0-9]+)?/?$"
+        }
+      }
+    },
+    "facet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "owner"],
+      "properties": {
+        "id": {
+          "description": "No whitespace. Uniqueness within the manifest is checked by the importer, not this schema.",
+          "type": "string",
+          "pattern": "^\\S+$"
+        },
+        "kind": {
+          "enum": ["presentation", "model-capability", "provider-role", "background-work", "artifact"]
+        },
+        "title": { "type": "string" },
+        "owner": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "enum": ["app-surface", "mcp-server", "node-plugin", "external-connector"] },
+            "id": { "$ref": "#/$defs/nonEmptyString" }
+          }
+        },
+        "destinationId": { "type": "string" },
+        "launchPath": {
+          "description": "Origin-relative page path. Presentation + external-connector only. No query or fragment.",
+          "type": "string",
+          "pattern": "^/(?!/)[^?#\\\\\\s]*$"
+        },
+        "setup": { "$ref": "#/$defs/setup" }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["launchPath"] },
+          "then": {
+            "properties": {
+              "kind": { "const": "presentation" },
+              "owner": { "properties": { "kind": { "const": "external-connector" } } }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["setup"],
+            "properties": { "setup": { "properties": { "kind": { "const": "mcp-server" } } } }
+          },
+          "then": {
+            "properties": {
+              "kind": { "const": "model-capability" },
+              "owner": { "properties": { "kind": { "const": "mcp-server" } } }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["setup"],
+            "properties": { "setup": { "properties": { "kind": { "const": "node-plugin" } } } }
+          },
+          "then": {
+            "properties": {
+              "kind": { "enum": ["model-capability", "background-work"] },
+              "owner": { "properties": { "kind": { "const": "node-plugin" } } }
+            }
+          }
+        }
+      ]
+    },
+    "setup": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "mcpServer"],
+          "properties": {
+            "kind": { "const": "mcp-server" },
+            "mcpServer": { "$ref": "#/$defs/mcpServerSetup" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "nodePlugin"],
+          "properties": {
+            "kind": { "const": "node-plugin" },
+            "nodePlugin": { "$ref": "#/$defs/nodePluginSetup" }
+          }
+        }
+      ]
+    },
+    "mcpServerSetup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endpoint", "transport", "credentialRequirement"],
+      "properties": {
+        "endpoint": { "$ref": "#/$defs/httpURL" },
+        "transport": { "enum": ["streamable-http", "sse"] },
+        "credentialRequirement": {
+          "enum": ["none", "configured-headers", "configured-query-parameters", "oauth"]
+        },
+        "suggestedHandle": { "type": "string" },
+        "summary": { "type": "string" }
+      }
+    },
+    "nodePluginSetup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pluginId",
+        "displayName",
+        "version",
+        "publisher",
+        "source",
+        "packageMode",
+        "image",
+        "protocols",
+        "requestedPermissions",
+        "resources"
+      ],
+      "properties": {
+        "pluginId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$" },
+        "displayName": { "$ref": "#/$defs/nonEmptyString" },
+        "version": { "$ref": "#/$defs/nonEmptyString" },
+        "publisher": { "$ref": "#/$defs/nonEmptyString" },
+        "source": { "$ref": "#/$defs/nonEmptyString" },
+        "packageMode": { "enum": ["oci", "source-node"] },
+        "image": { "type": "string" },
+        "protocols": { "type": "array", "items": { "type": "string" } },
+        "requestedPermissions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["network", "persistentVolume", "secretHandles", "hostPaths", "deviceAccess"],
+          "properties": {
+            "network": { "enum": ["none", "outbound"] },
+            "persistentVolume": { "type": "boolean" },
+            "secretHandles": {
+              "description": "Must be empty: a manifest cannot request injected secrets.",
+              "type": "array",
+              "maxItems": 0
+            },
+            "hostPaths": { "type": "array", "items": { "type": "string" } },
+            "deviceAccess": { "type": "boolean" }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "memoryMiB": { "type": "integer" },
+            "cpuMillis": { "type": "integer" },
+            "pids": { "type": "integer" }
+          }
+        }
+      }
+    }
+  }
+}

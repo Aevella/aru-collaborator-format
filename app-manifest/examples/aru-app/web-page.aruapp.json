@@ -1,0 +1,29 @@
+{
+  "protocol": "aru.app.v1",
+  "id": "com.example.reading-room",
+  "name": "示例网页应用",
+  "version": "1.0.0",
+  "publisher": {
+    "name": "Example Studio"
+  },
+  "runtime": {
+    "kind": "external-endpoint",
+    "origin": "https://reading.example.com"
+  },
+  "requestedPermissions": [],
+  "dataDestinations": [
+    "https://reading.example.com"
+  ],
+  "facets": [
+    {
+      "id": "main",
+      "kind": "presentation",
+      "title": "示例网页应用",
+      "owner": {
+        "kind": "external-connector",
+        "id": "com.example.reading-room.page"
+      },
+      "launchPath": "/"
+    }
+  ]
+}

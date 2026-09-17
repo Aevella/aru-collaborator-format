@@ -1,4 +1,16 @@
-# 把聊天记录带进 Aru
+# Aru 接入与数据互操作
+
+本仓库提供 Aru 的公开格式规格、使用说明、Schema、示例和校验工具。
+
+| 目标 | 入口 | 格式 |
+| --- | --- | --- |
+| 将原始聊天导出转换为 Aru 可导入的数据 | [数据转换与导入指南](#把聊天记录带进-aru) · [AI 转换说明](CONVERT-WITH-AI.md) | `aru-collaborator` v1 |
+| 将网页和连接能力接入 Aru 的应用入口 | [应用接入指南](app-manifest/README.md) · [描述文件规格](app-manifest/ARU-APP-MANIFEST.md) | `aru.app.v1` |
+
+两套格式独立演进：协作者交换文件用于数据迁入，应用描述文件用于安装应用入口和声明连接能力。
+本仓库保留原有名称和文件路径，既有转换教程、下载链接和 v1.0.0 发布保持有效。
+
+## 把聊天记录带进 Aru
 
 **Aru 协作者交换格式 v1**，用来迁入协作者、聊天记录、明确保存的记忆，以及头像和附件。
 
@@ -54,4 +66,4 @@ python3 scripts/aru-collaborator/aru_collaborator.py validate example.arucollab
 
 固定版本请使用 [v1.0.0](https://github.com/Aevella/aru-collaborator-format/tree/v1.0.0)，不要依赖会变化的 main 分支。格式里的 `version` 仍是整数 `1`；v1.0.0 是本套文档与工具的发布版本。
 
-本仓库公开维护交换规范、示例和生产者工具；Aru 应用实现单独维护。未来 App 内的教程入口还需后续版本接入，目前可直接分享本页。
+本仓库公开维护数据交换与应用接入规格、示例和工具；Aru 应用实现单独维护。未来 App 内的教程入口还需后续版本接入，目前可直接分享本页。

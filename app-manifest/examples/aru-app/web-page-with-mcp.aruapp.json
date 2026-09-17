@@ -1,0 +1,51 @@
+{
+  "protocol": "aru.app.v1",
+  "id": "com.example.garden-forum",
+  "name": "示例论坛应用",
+  "version": "2.1.0",
+  "publisher": {
+    "name": "Example Garden"
+  },
+  "runtime": {
+    "kind": "external-endpoint",
+    "origin": "https://garden.example.com"
+  },
+  "requestedPermissions": [
+    "读取论坛帖子",
+    "以你的身份发帖"
+  ],
+  "dataDestinations": [
+    "https://garden.example.com"
+  ],
+  "facets": [
+    {
+      "id": "board",
+      "kind": "presentation",
+      "title": "论坛首页",
+      "owner": {
+        "kind": "external-connector",
+        "id": "com.example.garden-forum.board"
+      },
+      "launchPath": "/app/board"
+    },
+    {
+      "id": "tools",
+      "kind": "model-capability",
+      "title": "论坛工具",
+      "owner": {
+        "kind": "mcp-server",
+        "id": "com.example.garden-forum.mcp"
+      },
+      "setup": {
+        "kind": "mcp-server",
+        "mcpServer": {
+          "endpoint": "https://garden.example.com/mcp",
+          "transport": "streamable-http",
+          "credentialRequirement": "configured-headers",
+          "suggestedHandle": "garden",
+          "summary": "搜索帖子、读取楼层、发布回复"
+        }
+      }
+    }
+  ]
+}
