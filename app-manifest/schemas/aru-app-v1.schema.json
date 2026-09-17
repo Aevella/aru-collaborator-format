@@ -115,9 +115,11 @@
           "type": "string",
           "pattern": "^/(?!/)[^?#\\\\\\s]*$"
         },
-        "setup": { "$ref": "#/$defs/setup" }
+            "setup": { "$ref": "#/$defs/setup" },
+        "webLogin": { "$ref": "#/$defs/webLogin" }
       },
       "allOf": [
+        { "if": { "required": ["webLogin"] }, "then": { "required": ["launchPath"] } },
         {
           "if": { "required": ["launchPath"] },
           "then": {
@@ -153,6 +155,7 @@
         }
       ]
     },
+    "webLogin": {"type": "object", "additionalProperties": false, "required": ["method"], "properties": {"method": {"enum": ["httpBasic", "queryToken", "persistentQueryToken"]}, "parameterName": {"type": "string", "pattern": "^\\S+$"}}, "allOf": [{"if": {"properties": {"method": {"enum": ["queryToken", "persistentQueryToken"]}}}, "then": {"required": ["parameterName"]}}]},
     "setup": {
       "oneOf": [
         {

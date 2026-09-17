@@ -1,0 +1,54 @@
+{
+  "protocol": "aru.app.v1",
+  "id": "com.example.tools-bundle",
+  "name": "示例 MCP 工具组",
+  "version": "1.0.0",
+  "publisher": {
+    "name": "Example Studio"
+  },
+  "runtime": {
+    "kind": "external-endpoint",
+    "origin": "https://tools.example.com"
+  },
+  "requestedPermissions": [],
+  "dataDestinations": [
+    "https://search.example.com/mcp",
+    "https://notes.example.com/mcp"
+  ],
+  "facets": [
+    {
+      "id": "search",
+      "kind": "model-capability",
+      "title": "search",
+      "owner": {
+        "kind": "mcp-server",
+        "id": "com.example.search"
+      },
+      "setup": {
+        "kind": "mcp-server",
+        "mcpServer": {
+          "endpoint": "https://search.example.com/mcp",
+          "transport": "streamable-http",
+          "credentialRequirement": "none"
+        }
+      }
+    },
+    {
+      "id": "notes",
+      "kind": "model-capability",
+      "title": "notes",
+      "owner": {
+        "kind": "mcp-server",
+        "id": "com.example.notes"
+      },
+      "setup": {
+        "kind": "mcp-server",
+        "mcpServer": {
+          "endpoint": "https://notes.example.com/mcp",
+          "transport": "streamable-http",
+          "credentialRequirement": "oauth"
+        }
+      }
+    }
+  ]
+}

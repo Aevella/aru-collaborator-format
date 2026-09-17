@@ -52,6 +52,16 @@ class ManifestSchemaTests(unittest.TestCase):
                     invalid["facets"][1]["setup"][key] = {}
                     self.assertFalse(VALIDATOR.is_valid(invalid))
 
+    def test_web_login_requires_a_page_and_token_parameter(self):
+        document = example()
+        document["facets"][0]["webLogin"] = {"method": "queryToken", "parameterName": "access_token"}
+        VALIDATOR.validate(document)
+        del document["facets"][0]["webLogin"]["parameterName"]
+        self.assertFalse(VALIDATOR.is_valid(document))
+        document["facets"][0]["webLogin"] = {"method": "httpBasic"}
+        del document["facets"][0]["launchPath"]
+        self.assertFalse(VALIDATOR.is_valid(document))
+
     def test_url_authority_preserves_hosts_ipv6_and_numeric_ports(self):
         for origin in ("https://example.com", "http://localhost:8080", "http://127.0.0.1:3000",
                        "https://[::1]:8443", "https://[2001:db8::1]", "https://例子.测试"):

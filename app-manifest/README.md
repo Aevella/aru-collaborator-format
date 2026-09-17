@@ -4,10 +4,14 @@
 
 ## 接入步骤
 
-1. 下载[网页示例](examples/aru-app/web-page.aruapp.json)，修改应用 `id`、名称、发布者、`runtime.origin`、数据目的地和 `launchPath`。
-2. 在 Aru 的「设置 → 应用与连接 → 从描述文件安装」中选择 JSON，检查预览并确认安装。
-3. 在应用详情打开「显示在对话 Apps 中」，将已就绪的网页入口加入对话启动器。
-4. 在 Aru 中打开页面，检查页面加载和图标显示。
+1. 根据应用选择[网页示例](examples/aru-app/web-page.aruapp.json)、[网页与 MCP 示例](examples/aru-app/web-page-with-mcp.aruapp.json)或[多个 MCP 示例](examples/aru-app/mcp-bundle.aruapp.json)，修改身份和服务地址。
+2. 在 Aru 的「设置 → 应用与连接」选择描述文件，或粘贴 JSON 文件链接，检查预览并确认安装。
+3. 安装后进入应用详情：打开网页、配置网页登录、连接 MCP；需要授权的 MCP 可进入各自设置完成登录或填写凭据。
+4. 按需放入对话 Apps 或协作者桌面，再检查页面加载和图标显示。
+
+网站可按[安装链接说明](ARU-APP-MANIFEST.md#12-安装链接)提供「安装到 Aru」按钮。`webLogin` 只声明登录方式，凭据由用户在 Aru 中填写。网页和 MCP 的授权分别管理。
+
+以上新流程对应源码 `9ed0586b5`，已通过本机服务和 Simulator 验证，尚未随客户端分发。旧版客户端可继续用文件导入；安装链接、登录配置和桌面入口需等待包含该实现的版本。
 
 图标来自原网页 HTML。页面加载完成时需存在 `<link rel="icon" href="...">` 声明，图片使用可直接下载的 HTTP(S) 地址，建议 PNG 或 JPEG。详细的读取顺序、缓存和回退行为见[图标出现的条件](ARU-APP-MANIFEST.md#72-图标出现的条件)。
 
@@ -19,6 +23,7 @@
 - [JSON Schema](schemas/aru-app-v1.schema.json)
 - [网页入口示例](examples/aru-app/web-page.aruapp.json)
 - [网页与 MCP 示例](examples/aru-app/web-page-with-mcp.aruapp.json)
+- [多个 MCP 示例](examples/aru-app/mcp-bundle.aruapp.json)
 
 从仓库根目录运行 Schema 回归检查，需要 [uv](https://docs.astral.sh/uv/)：
 

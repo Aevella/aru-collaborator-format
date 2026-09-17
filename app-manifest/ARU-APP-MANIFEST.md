@@ -3,12 +3,14 @@
 状态：开发者规格，版本 1，按当前源码行为编写。
 
 描述文件是一份 UTF-8 JSON，描述应用身份、发布者、网页入口及其他能力。
-用户在 设置 → 应用与连接 → 从描述文件安装 里选择它，Aru 先只读取并展示预览，确认后才写入安装。
+用户在 设置 → 应用与连接 中选择描述文件或粘贴描述文件链接。Aru 读取并展示预览，确认后写入安装并进入配置详情。
+
+本轮新增链接安装、网页登录提示和桌面入口；客户端分发状态独立于本规格发布。
 
 - 机器可读定义：[`schemas/aru-app-v1.schema.json`](schemas/aru-app-v1.schema.json)
 - 示例：[`examples/aru-app`](examples/aru-app)
 
-本规格对应 Aru 源码提交 `f11715a4e`，记录当前实现。文档发布不代表新的客户端版本发布。
+本规格对应 Aru 源码提交 `9ed0586b5`。链接安装、网页登录提示和桌面入口已完成源码与本机验证，尚未随客户端分发。
 协议扩展时同步更新规格、Schema 和示例。返回[仓库首页](../README.md)。
 
 ## 1. 最小可用文件
@@ -55,7 +57,7 @@ Schema 用于编写阶段的结构检查，不等同于完整导入校验。face
 由 `AppInstallationStore.decodeManifest` 校验；通过 Schema 后仍需在 Aru 中检查导入预览。
 Schema 不执行字符串清理，编写文件时使用清理后的字段值。
 
-仓库根目录执行 Schema 回归检查：`uv run app-manifest/scripts/aru-app/test_manifest_schema.py`。
+仓库中的 Schema 回归检查：`uv run scripts/aru-app/test_manifest_schema.py`。
 
 ## 3. 顶层字段
 
@@ -94,6 +96,7 @@ Schema 不执行字符串清理，编写文件时使用清理后的字段值。
 | `launchPath` | 见下 | 网页入口路径。 |
 | `destinationId` | 否 | 同一页面的多入口区分键，只参与已打开会话的去重，**不改变打开的 URL**。 |
 | `setup` | 否 | 连接说明，见第 6 节。 |
+| `webLogin` | 否 | 网页登录方式提示，见第 6.3 节；不包含凭据值。 |
 
 ### 5.1 当前支持的能力组合
 
@@ -164,15 +167,40 @@ Schema 不执行字符串清理，编写文件时使用清理后的字段值。
 
 这里的权限只是请求，节点返回的授权回执和用户确认才是实际授予。
 
-## 7. 在对话里显示
+### 6.3 网页登录提示
+
+有网页入口的 `presentation` + `external-connector` facet 可声明：
+
+```json
+"webLogin": { "method": "queryToken", "parameterName": "access_token" }
+```
+
+`method` 支持 `httpBasic`、`queryToken`、`persistentQueryToken`。后两种需要非空、无空白的
+`parameterName`；HTTP Basic 不使用该字段。省略 `webLogin` 时，网页可以使用自己的登录表单。
+安装后在“网页登录方式”中输入凭据；已有安装的配置优先于描述文件提示，更新文件不会替换用户凭据。
+网页与 MCP 采用各自认证流程，只有网页登录成功不能证明 MCP 已授权。
+
+### 6.4 多个 MCP
+
+一份描述文件可以包含多个 `model-capability` + `mcp-server` facet，每项使用独立的 facet id、
+endpoint 和凭据要求。也可以完全不包含网页；见 [MCP 工具组示例](examples/aru-app/mcp-bundle.aruapp.json)。
+
+安装后选择“连接或检查 MCP”，按顺序推进待连接和待检查的服务。每项连接结果独立保留；需要凭据或 OAuth
+时进入该项设置完成授权，返回应用详情继续检查。取消批处理停止继续推进后续项；已开始的连接通过该项的
+取消操作处理。重试使用现有服务关系，不重复安装已经连接的服务。
+
+## 7. 在对话和桌面显示
 
 ### 7.1 出现在对话 Apps 启动器
 
-安装后，在 设置 → 应用与连接 → 应用详情 里打开
+安装预览可选择“显示在对话 Apps 中”；也可以安装后，在 设置 → 应用与连接 → 应用详情 里打开
 “显示在对话 Apps 中”。这个开关只对已就绪的网页 facet 出现，打开后在所有对话里显示。
 当前版本的挂载位置由用户在 Aru 中设置。
 
 启动器里的“管理应用”会跳到设置页，启动器本身不能增删应用。
+
+安装预览和应用详情也可以选择协作者桌面。桌面的“已安装应用”区域提供添加、打开和移除入口。
+桌面位置按协作者隔离；移除入口不卸载应用，卸载则移除该应用的全部入口。网页复用同一安装的登录存储。
 
 ### 7.2 图标出现的条件
 
@@ -240,8 +268,8 @@ Aru 每次收到页面加载完成事件时，从主页面的 `<link rel>` 中�
   - HTTP Basic；
   - 一次性 URL token；
   - 持续 URL token。
-- 目前只有“通过网址连接网页应用”这个入口能设置 HTTP Basic 或 URL token。
-  从描述文件安装的应用只能用网页内登录。
+- 从描述文件安装后，应用详情的“网页登录方式”也可配置 HTTP Basic 或 URL token。
+  每个网页入口分别配置；网页自身登录直接在“打开”后的页面完成。
 - MCP 凭据由用户在 MCP 服务设置里填写，描述文件只声明 `credentialRequirement`。
 - 节点插件不能通过描述文件请求注入密钥（`secretHandles` 必须为空）。
 
@@ -262,10 +290,22 @@ Aru 每次收到页面加载完成事件时，从主页面的 `<link rel>` 中�
 ## 11. 当前实现范围
 
 - 图标通过网页 HTML 声明，读取条件见第 7.2 节。
-- 挂载位置在 Aru 中设置；HTTP Basic 和 URL token 配置目前位于“通过网址连接网页应用”入口。
+- 挂载位置在 Aru 中设置，支持对话 Apps 和协作者桌面；网页登录配置位于应用详情。
 - `app-surface`、`provider-role`、`artifact` 还没有运行时。
 - 发布者只是自称，没有签名或受信来源验证。
 - `requestedPermissions` 与 `dataDestinations` 是自述文本，Aru 不据此强制任何限制。
 
 同一协议版本的兼容扩展保留既有文件的解析和行为。需要改变既有字段语义或必填要求时，
 另行定义协议版本及迁移方案。
+
+## 12. 安装链接
+
+网站可提供指向 `aru://install-app?url=<编码后的描述文件URL>` 的“安装到 Aru”按钮。
+`url` 是 HTTP(S) 描述文件地址，使用 URL 查询参数编码。例：
+
+```html
+<a href="aru://install-app?url=https%3A%2F%2Fexample.com%2Fapp.aruapp.json">安装到 Aru</a>
+```
+
+点击后 Aru 获取文件并显示安装预览，不自动提交安装或授权。未安装 Aru 时，网站应同时提供
+描述文件下载和客户端获取说明。描述文件仍可通过文件选择器导入。

@@ -26,7 +26,10 @@
         "kind": "external-connector",
         "id": "com.example.garden-forum.board"
       },
-      "launchPath": "/app/board"
+      "launchPath": "/app/board",
+      "webLogin": {
+        "method": "httpBasic"
+      }
     },
     {
       "id": "tools",
